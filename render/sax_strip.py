@@ -29,11 +29,12 @@ SAX_Y = SAX_BOTTOM - TARGET_H
 NOTE_NAMES = ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
 
 # Round key cups down the front of the body, high notes near the neck.
-N_KEYS = 12
+N_KEYS = 11
+# Centres of the main round key cups on the front of the body, top to bottom.
 KEY_NORM = (
-    (0.500, 0.180), (0.520, 0.240), (0.540, 0.300), (0.552, 0.360),
-    (0.562, 0.420), (0.570, 0.480), (0.575, 0.540), (0.580, 0.600),
-    (0.585, 0.660), (0.590, 0.720), (0.595, 0.780), (0.600, 0.840),
+    (0.568, 0.284), (0.566, 0.326), (0.574, 0.376), (0.569, 0.438),
+    (0.571, 0.499), (0.578, 0.612), (0.580, 0.659), (0.580, 0.700),
+    (0.572, 0.748), (0.568, 0.816), (0.574, 0.845),
 )
 BELL_NORM = (0.730, 0.680)
 REED_NORM = (0.130, 0.070)
@@ -122,8 +123,8 @@ class SaxStripGenerator:
         self.reed = (SAX_X + REED_NORM[0] * self.sax_w,
                      SAX_Y + REED_NORM[1] * self.sax_h)
 
-        self.key_halo = _glow_rgba(110, self.key_color)
-        self.key_ring = _ring_rgba(124, 34.0, 8.0, self.key_color)
+        self.key_halo = _glow_rgba(86, self.key_color)
+        self.key_ring = _ring_rgba(84, 22.0, 5.0, self.key_color)
         self.bell_glow = _glow_rgba(260, self.key_color)
         self.bell_ring = _ring_rgba(220, 92.0, 20.0, self.key_color)
         self.reed_glow = _glow_rgba(100, self.key_color)
@@ -220,10 +221,10 @@ class SaxStripGenerator:
             if e <= 0.02:
                 continue
             x, y = self.keys[si]
-            self._blend_rgba(layer, self.key_halo, int(x - 55), int(y - 55),
-                             0.20 * min(1.0, e))
-            self._blend_rgba(layer, self.key_ring, int(x - 62), int(y - 62),
-                             0.68 * min(1.0, e))
+            self._blend_rgba(layer, self.key_halo, int(x - 43), int(y - 43),
+                             0.24 * min(1.0, e))
+            self._blend_rgba(layer, self.key_ring, int(x - 42), int(y - 42),
+                             0.82 * min(1.0, e))
 
     def _stamp(self, layer, cx, cy, sprite, color, intensity):
         sh = sprite.shape[0]

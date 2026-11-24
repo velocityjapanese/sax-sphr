@@ -1,6 +1,6 @@
 """Two-stem FluidSynth rendering (sax + piano) plus mastering.
 
-The sax stem uses the MuseScore General alto-sax patch (program 65); the piano
+The sax stem uses the MuseScore General tenor-sax patch (program 66); the piano
 stem prefers the same Salamander grand used by the piano channel, so the
 accompaniment keeps that close-miked, natural character. Stems are mixed, then
 run through one shared hall reverb and loudness normaliser so both instruments
@@ -183,7 +183,7 @@ def master_audio(raw_wav, output_wav, work_dir):
     processed = os.path.join(work_dir, os.path.basename(output_wav).replace(".wav", "_proc.wav"))
 
     chain = (
-        # Warm the alto sax body, soften the honky midrange, and lift the reed
+        # Warm the tenor sax body, soften the honky midrange, and lift the reed
         # presence without making the top end brittle.
         "[0:a]highpass=f=55,lowpass=f=18000,"
         "equalizer=f=220:t=q:w=0.9:g=0.7,"

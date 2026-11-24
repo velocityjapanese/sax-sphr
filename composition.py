@@ -125,8 +125,9 @@ def _voicing(tonic, intervals, root_deg, base_octave=2):
     root = _scale_pitch(tonic, intervals, root_deg, base_octave)
     third = _scale_pitch(tonic, intervals, root_deg + 2, base_octave)
     fifth = _scale_pitch(tonic, intervals, root_deg + 4, base_octave)
+    seventh = _scale_pitch(tonic, intervals, root_deg + 6, base_octave)
     return {"root": root, "third": third, "fifth": fifth,
-            "oct": root + 12, "tenth": third + 12}
+            "seventh": seventh, "oct": root + 12, "tenth": third + 12}
 
 
 def _make_motif(rng, length):
@@ -210,46 +211,43 @@ def PALETTE_ORDER_SHUFFLE(rng):
 # Two-bar phrase onset templates (beats 0..8) for the sax line.
 SAX_RHYTHMS = {
     "theme": (
-        (0, 1, 2, 3, 4, 5.5, 6.5),
-        (0, 1.5, 2.5, 3.5, 4.5, 6),
-        (0, 0.75, 1.5, 2.5, 3, 4, 5, 6, 7),
-        (0, 1, 1.5, 2.5, 3.5, 4, 5, 6),
+        (0, 1.5, 2.5, 4.0, 5.5, 6.5),
+        (0, 1.0, 2.5, 4.5, 6.0),
+        (0, 2.0, 3.5, 4.5, 6.5),
     ),
     "variation": (
-        (0, 0.75, 1.5, 2.75, 3.5, 4, 5.25, 6.5),
-        (0, 1.5, 2.25, 3, 4.5, 5.5, 6.5),
-        (0, 1, 2, 3, 4.5, 5, 6, 7),
+        (0, 1.5, 3.0, 4.5, 6.5),
+        (0, 0.75, 2.0, 3.5, 5.0, 6.5),
     ),
     "contrast": (
-        (0, 2, 3, 4, 6),
-        (0, 1.5, 3, 4.5, 6),
+        (0, 2.0, 4.0, 6.0),
+        (0, 2.5, 4.5, 6.5),
     ),
     "climax": (
-        (0, 1, 2, 3, 4, 5, 6, 7),
-        (0, 0.5, 1.5, 2, 3, 4, 5, 6, 7),
-        (0, 1.5, 2.5, 3, 4.5, 5.5, 6.5),
+        (0, 1.0, 2.0, 3.5, 5.0, 6.5),
+        (0, 1.5, 2.5, 4.0, 5.5, 6.5),
     ),
-    "intro": ((0, 2, 4, 6.5), (0, 3, 4.5, 6)),
-    "coda": ((0, 2, 4, 5.5), (0, 1.5, 3.5, 6)),
+    "intro": ((0, 2.0, 4.0, 6.0),),
+    "coda": ((0, 2.0, 3.5, 6.0),),
 }
 
 # Base MIDI expression (CC11) per section role: the breath-pressure floor.
 SAX_EXPRESSION = {
-    "theme": 96, "variation": 100, "contrast": 88,
-    "climax": 108, "intro": 84, "coda": 80,
+    "theme": 90, "variation": 94, "contrast": 86,
+    "climax": 102, "intro": 80, "coda": 78,
 }
 
 
 def _generate_section(section, rng, motif_deltas, variant_plan, notes, pedal,
                       expr, sec_start_sec, sec_start_tick):
     tonic, intervals = section.tonic, section.intervals
-    scale_ps = _scale_pitches(tonic, intervals, 60, 91)
+    scale_ps = _scale_pitches(tonic, intervals, 48, 79)
     beats_per_sec = section.bpm / 60.0
     sec_per_beat = 60.0 / section.bpm
     chord_bars = 2 if section.role in ("intro", "coda") else 1
     rhythms = SAX_RHYTHMS[section.role]
     expr_base = SAX_EXPRESSION[section.role]
-    center = _nearest(scale_ps, max(69, min(81, 73 + 2 * (section.register - 4))))
+    center = _nearest(scale_ps, max(58, min(70, 64 + 2 * (section.register - 4))))
     center_idx = scale_ps.index(center)
     prev_idx = center_idx
 
@@ -268,7 +266,7 @@ def _generate_section(section, rng, motif_deltas, variant_plan, notes, pedal,
             local_beat = onset % 4.0
             strong = local_beat in (0.0, 2.0)
             chord_deg = section.prog[(bar // chord_bars) % len(section.prog)]
-            chord_ps = _chord_pitches(tonic, intervals, chord_deg, 60, 88)
+            chord_ps = _chord_pitches(tonic, intervals, chord_deg, 48, 79)
 
             if idx > 0:
                 pitch_idx += deltas[idx % len(deltas)]
@@ -278,7 +276,7 @@ def _generate_section(section, rng, motif_deltas, variant_plan, notes, pedal,
                 pitch_idx += 1
             if pos > 0.72 and pitch_idx > center_idx - 3 and rng.random() < 0.5:
                 pitch_idx -= 1
-            pitch_idx = max(center_idx - 9, min(center_idx + 9, pitch_idx))
+            pitch_idx = max(center_idx - 8, min(center_idx + 8, pitch_idx))
             pitch = scale_ps[pitch_idx]
             if strong and chord_ps:
                 near = _nearest(chord_ps, pitch)
@@ -322,7 +320,7 @@ def _generate_section(section, rng, motif_deltas, variant_plan, notes, pedal,
             # Grace note: a quick upper neighbour leans into a strong beat.
             if strong and dur_beats >= 1.0 and rng.random() < 0.38:
                 upper = _nearest(scale_ps, pitch + 2)
-                if upper != pitch and 60 <= upper <= 91:
+                if upper != pitch and 48 <= upper <= 79:
                     lead = 0.085
                     g_on = max(sec_start_sec, on_sec - lead)
                     g_tick = max(0, on_tick - round(lead * beats_per_sec * TPB))
@@ -336,9 +334,9 @@ def _generate_section(section, rng, motif_deltas, variant_plan, notes, pedal,
 
             # Light trill on long notes: the sax's other signature gesture.
             if (section.role in ("climax", "variation") and strong
-                    and dur_beats >= 1.8 and pitch < 88 and rng.random() < 0.22):
+                    and dur_beats >= 1.8 and pitch < 76 and rng.random() < 0.22):
                 upper = _nearest(scale_ps, pitch + 2)
-                if upper != pitch and upper <= 91:
+                if upper != pitch and upper <= 79:
                     for k in range(4):
                         t_on = on_sec + 0.13 * (k + 1)
                         t_tick = on_tick + round(0.13 * (k + 1) * beats_per_sec * TPB)
@@ -374,7 +372,7 @@ def _generate_section(section, rng, motif_deltas, variant_plan, notes, pedal,
                 _add_lh(notes, v["fifth"], 54, sec_start_sec, bar, 2.0,
                         sec_per_beat, sec_start_tick, section.bpm, beats=1.9, rng=rng)
                 for offset, key, acc_vel in ((0.0, "oct", 54), (1.5, "third", 50),
-                                            (2.5, "oct", 52)):
+                                            (2.5, "oct", 52), (3.0, "seventh", 46)):
                     p = v[key] + 12
                     if p > 76:
                         p -= 12
@@ -419,6 +417,8 @@ def compose(target_minutes=15, seed=None, output_dir=None, base_name=None,
     notes = []
     pedal = []
     expr = []
+    mod = []
+    bends = []
     sec_start_sec = 0.0
     sec_start_tick = 0
     timeline_sections = []
@@ -462,8 +462,23 @@ def compose(target_minutes=15, seed=None, output_dir=None, base_name=None,
     notes.sort(key=lambda n: (n["on_sec"], n["pitch"]))
     title = _make_title(rng, avoid_titles)
 
+    # Sax-specific articulation: a delayed vibrato on held notes and a short
+    # upward scoop into some long notes. Both are what make a line read as a
+    # saxophone rather than a generic MIDI wind patch.
+    for n in notes:
+        if n["hand"] != "R" or n.get("arp"):
+            continue
+        if n["dur_sec"] >= 0.8:
+            on, off = n["on_tick"], n["off_tick"]
+            mod.extend([(on + 20, 24),
+                        (on + round(0.35 * TPB), 40),
+                        (off - 10, 0)])
+        if n["dur_sec"] >= 1.25 and n["vel"] >= 68 and rng.random() < 0.28:
+            on = n["on_tick"]
+            bends.extend([(on, -4096), (on + 55, 0)])
+
     midi_path = os.path.join(output_dir, f"{base_name}.mid")
-    _write_midi(midi_path, sections, notes, pedal, expr, total_sec, base_bpm)
+    _write_midi(midi_path, sections, notes, pedal, expr, mod, bends, total_sec, base_bpm)
 
     timeline = {
         "version": 2,
@@ -473,7 +488,7 @@ def compose(target_minutes=15, seed=None, output_dir=None, base_name=None,
         "base_bpm": base_bpm,
         "duration": round(total_sec, 3),
         "fps": FPS,
-        "instruments": {"sax": 65, "piano": 0},
+        "instruments": {"sax": 66, "piano": 0},
         "sections": timeline_sections,
         "notes": [
             {"start": round(n["on_sec"], 4), "end": round(n["on_sec"] + n["dur_sec"], 4),
@@ -502,7 +517,7 @@ def compose(target_minutes=15, seed=None, output_dir=None, base_name=None,
     }
 
 
-def _write_midi(path, sections, notes, pedal, expr, total_sec, base_bpm):
+def _write_midi(path, sections, notes, pedal, expr, mod, bends, total_sec, base_bpm):
     mid = MidiFile(type=1, ticks_per_beat=TPB)
     tempo_track = MidiTrack()
     mid.tracks.append(tempo_track)
@@ -517,7 +532,7 @@ def _write_midi(path, sections, notes, pedal, expr, total_sec, base_bpm):
         tick = sec_tick
     tempo_track.append(MetaMessage("end_of_track", time=TPB))
 
-    def build_track(hand, channel, program, name, with_pedal, controllers):
+    def build_track(hand, channel, program, name, with_pedal, controllers, mod_events, bend_events):
         track = MidiTrack()
         track.append(MetaMessage("track_name", name=name, time=0))
         track.append(Message("program_change", channel=channel, program=program, time=0))
@@ -532,6 +547,10 @@ def _write_midi(path, sections, notes, pedal, expr, total_sec, base_bpm):
                 events.append((ptick, 1, "cc", 64, value))
         for ctick, value in controllers:
             events.append((ctick, 1, "cc", 11, value))
+        for mtick, value in mod_events:
+            events.append((mtick, 1, "cc", 1, value))
+        for btick, value in bend_events:
+            events.append((btick, 1, "bend", value, 0))
         events.sort(key=lambda e: (e[0], e[1]))
         last = 0
         for t, _, kind, a, b in events:
@@ -541,13 +560,15 @@ def _write_midi(path, sections, notes, pedal, expr, total_sec, base_bpm):
                 track.append(Message("note_on", channel=channel, note=a, velocity=b, time=delta))
             elif kind == "off":
                 track.append(Message("note_off", channel=channel, note=a, velocity=0, time=delta))
+            elif kind == "bend":
+                track.append(Message("pitchwheel", channel=channel, pitch=a, time=delta))
             else:
                 track.append(Message("control_change", channel=channel, control=a, value=b, time=delta))
         track.append(MetaMessage("end_of_track", time=TPB))
         return track
 
-    mid.tracks.append(build_track("R", 0, 65, "Sax", False, expr))
-    mid.tracks.append(build_track("L", 1, 0, "Piano", True, []))
+    mid.tracks.append(build_track("R", 0, 66, "Sax", False, expr, mod, bends))
+    mid.tracks.append(build_track("L", 1, 0, "Piano", True, [], [], []))
     mid.save(path)
 
 

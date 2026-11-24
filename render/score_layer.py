@@ -335,7 +335,7 @@ def _segments(section, notes, bar_start, bar_end):
                 "start": seg_start,
                 "end": seg_end,
                 "t": float(note["start"]),
-                "pitch": int(note["pitch"]),
+                "pitch": int(note["pitch"]) + (12 if hand == "R" else 0),
                 "tie_in": not first,
                 "tie_out": seg_end < end - 1e-9,
             })
@@ -426,7 +426,7 @@ def _score_xml(bar_start, bar_end, per_hand, fifths, mode_str):
         'Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">',
         '<score-partwise version="4.0">',
         '<part-list>',
-        '<score-part id="P1"><part-name>Alto Sax</part-name></score-part>',
+        '<score-part id="P1"><part-name>Sax</part-name></score-part>',
         '<score-part id="P2"><part-name>Piano</part-name></score-part>',
         '</part-list>',
     ]
