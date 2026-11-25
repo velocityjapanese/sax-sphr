@@ -97,13 +97,9 @@ def generate_longform_video(mood="relaxing", title=None, bars=16, tempo=None,
         "sections": sections,
         "chapters": comp["chapters"],
         "attribution": (
-            "Original composition. Saxophone and piano samples: MuseScore_General "
-            "SoundFont by S. Christian Collins, MIT licence; piano samples: "
-            "Salamander Grand Piano V3 by Alexander Holm, CC BY 3.0 "
-            "(https://creativecommons.org/licenses/by/3.0/); audio rendered "
-            "from the samples with FluidSynth. Instrument photography: The "
-            "Metropolitan Museum of Art, Open Access (CC0), 'Alto saxophone "
-            "in E-flat' by Adolphe Sax, ca. 1855 (2005.82.1a-e, .2a-y)."
+            "Original composition. Piano samples: Salamander Grand Piano V3 by "
+            "Alexander Holm, CC BY 3.0 "
+            "(https://creativecommons.org/licenses/by/3.0/)."
         ),
     }
     meta_path = final_mp4.replace(".mp4", "_meta.json")
